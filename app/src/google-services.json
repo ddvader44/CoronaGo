@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "981618843072",
+    "firebase_url": "https://coronago-312ef.firebaseio.com",
+    "project_id": "coronago-312ef",
+    "storage_bucket": "coronago-312ef.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:981618843072:android:e15ed288d04cb04c70fc25",
+        "android_client_info": {
+          "package_name": "com.example.coronago"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "981618843072-te78dconeg8ftqimfb90p52507v4roe6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAe9oKr_NYkIPXnPCC-uAHk1FwFZ3Pcfag"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "981618843072-te78dconeg8ftqimfb90p52507v4roe6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
