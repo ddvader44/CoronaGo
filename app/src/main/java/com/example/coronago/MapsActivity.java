@@ -7,6 +7,8 @@ import androidx.fragment.app.FragmentActivity;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -22,20 +24,30 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private MarkerOptions options;
     private LocationManager locationManager;
     private LocationListener locationListener;
     private FirebaseDatabase database;
     private DatabaseReference LocationReference;
     private FirebaseAuth mAuth;
     private String currentUserID;
+    private ArrayList<LatLng> locationInfoUsers = new ArrayList<>();
+    private Geocoder geocoder;
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -60,6 +72,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mAuth = FirebaseAuth.getInstance();
+        options = new MarkerOptions();
         database = FirebaseDatabase.getInstance();
         LocationReference = FirebaseDatabase.getInstance().getReference().child("Location");
         currentUserID = mAuth.getCurrentUser().getUid();
@@ -83,8 +96,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 LocationReference.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).updateChildren(locationInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        // only for testing purposes
-                        Toast.makeText(MapsActivity.this, "Location uploaded!", Toast.LENGTH_SHORT).show();
+                        getAllUsersLocation();
                     }
                 });
 
@@ -106,5 +118,49 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         };
+    }
+
+    private void getAllUsersLocation() {
+        final String[] address = {""};
+        geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+        LocationReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.exists())
+                {
+                    for(DataSnapshot ds : snapshot.getChildren())
+                    {
+                        String usersLat = ds.child("latitude").getValue().toString();
+                        String usersLong = ds.child("longitude").getValue().toString();
+                        Double usersLatDouble = Double.parseDouble(usersLat);
+                        Double usersLongDouble  = Double.parseDouble(usersLong);
+                        LatLng loc = new LatLng(usersLatDouble,usersLongDouble);
+                        locationInfoUsers.add(loc);
+                        try {
+                            List<Address> listAddress = geocoder.getFromLocation(usersLatDouble,usersLongDouble,1);
+                            if(listAddress != null && listAddress.size() > 0) {
+                                if (listAddress.get(0).getLocality() != null) {
+                                    address[0] = listAddress.get(0).getLocality() + " ";
+                                }
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                    for (LatLng point : locationInfoUsers) {
+                        options.position(point);
+                        options.title(address[0]);
+                        options.snippet("Area");
+                        mMap.addMarker(options);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(MapsActivity.this, "Unable to fetch location data!", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
