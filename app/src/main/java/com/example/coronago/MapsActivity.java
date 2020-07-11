@@ -20,6 +20,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -79,6 +80,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         mMap = googleMap;
+        MapStyleOptions mapStyleOptions = MapStyleOptions.loadRawResourceStyle(this, R.raw.style_json);
+        mMap.setMapStyle(mapStyleOptions);
         locationManager =(LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         locationListener =new LocationListener() {
             @Override
@@ -141,6 +144,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             if(listAddress != null && listAddress.size() > 0) {
                                 if (listAddress.get(0).getLocality() != null) {
                                     address[0] = listAddress.get(0).getLocality() + " ";
+                                    for (LatLng point : locationInfoUsers) {
+                                        options.position(point);
+                                        options.title(address[0]);
+                                        options.snippet("Area");
+                                        mMap.addMarker(options);
+                                    }
                                 }
                             }
                         } catch (IOException e) {
@@ -148,12 +157,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
 
                     }
-                    for (LatLng point : locationInfoUsers) {
-                        options.position(point);
-                        options.title(address[0]);
-                        options.snippet("Area");
-                        mMap.addMarker(options);
-                    }
+
                 }
             }
 
