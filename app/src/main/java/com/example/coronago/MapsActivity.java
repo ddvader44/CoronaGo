@@ -25,6 +25,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -68,16 +69,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
         mAuth = FirebaseAuth.getInstance();
         options = new MarkerOptions();
         database = FirebaseDatabase.getInstance();
         LocationReference = FirebaseDatabase.getInstance().getReference().child("Location");
-        currentUserID = mAuth.getCurrentUser().getUid();
+        FirebaseUser mFirebaseUser = mAuth.getCurrentUser();
+        if(mFirebaseUser != null) {
+            currentUserID = mFirebaseUser.getUid(); //Do what you need to do with the id
+        }
+    }
 
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
 
         mMap = googleMap;
         MapStyleOptions mapStyleOptions = MapStyleOptions.loadRawResourceStyle(this, R.raw.style_json);
