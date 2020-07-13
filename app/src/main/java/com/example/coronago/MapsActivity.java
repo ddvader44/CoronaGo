@@ -38,6 +38,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -50,17 +53,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String currentUserID;
     private ArrayList<LatLng> locationInfoUsers = new ArrayList<>();
     private Geocoder geocoder;
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-                }
-            }
-        }
-    }
+    private static final int RC_LOCATION_SERVICE=124;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +62,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        requestPermission();
         mAuth = FirebaseAuth.getInstance();
         options = new MarkerOptions();
         database = FirebaseDatabase.getInstance();
@@ -76,6 +70,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FirebaseUser mFirebaseUser = mAuth.getCurrentUser();
         if(mFirebaseUser != null) {
             currentUserID = mFirebaseUser.getUid(); //Do what you need to do with the id
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode,permissions,grantResults,this);
+    }
+    @AfterPermissionGranted(RC_LOCATION_SERVICE)
+     private void requestPermission()
+    {
+        String[] perms = {Manifest.permission.INTERNET, Manifest.permission.ACCESS_FINE_LOCATION};
+        if(!EasyPermissions.hasPermissions(this,perms))
+        {
+            EasyPermissions.requestPermissions(this,"This app needs to access your location to work!",RC_LOCATION_SERVICE,perms);
+
         }
     }
 
